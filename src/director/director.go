@@ -59,37 +59,45 @@ func (d Director) GetRedirect(req *http.Request) (string, error) {
 }
 
 func (d Director) GetRootUrl(req *http.Request) (string, error) {
-	// Generate or extract correlation ID for request tracing
-	correlationID := req.Header.Get("X-Correlation-ID")
-	if correlationID == "" {
-		correlationID = uuid.New().String()
+	// Log protocol retrieval
+	protocol := "http"
+	if req.TLS != nil || req.Header.Get("X-Forwarded-Proto") == "https" {
+		protocol = "https"
+		d.Logger.Info(fmt.Sprintf("DEBUG: Retrieved protocol header [correlation_id=%s, protocol=%s]", req.Header.Get("X-Correlation-ID"), protocol))
+	} else {
+		d.Logger.Info(fmt.Sprintf("DEBUG: No TLS or X-Forwarded-Proto, defaulting to protocol=%s [correlation_id=%s]", protocol, req.Header.Get("X-Correlation-ID")))
 	}
 
-	// Log start of GetRootUrl
-	d.Logger.Info(fmt.Sprintf("Retrieving root URL [correlation_id=%s, method=%s, path=%s, client_ip=%s]", correlationID, req.Method, req.URL.Path, req.RemoteAddr))
-
-	protocol := req.Header.Get(XForwardedProto)
-	if protocol == "" {
-		d.Logger.Failure(errors.New(fmt.Sprintf("missing %s header [correlation_id=%s]", XForwardedProto, correlationID)))
-		return "", errors.New(XForwardedProto + " header is missing")
-	}
-
-	// Log protocol header
-	d.Logger.Info(fmt.Sprintf("DEBUG: Retrieved protocol header [correlation_id=%s, protocol=%s]", correlationID, protocol))
-
-	host := req.Header.Get(XForwardedHost)
+	// Try X-Forwarded-Host first
+	host := req.Header.Get("X-Forwarded-Host")
 	if host == "" {
-		d.Logger.Failure(errors.New(fmt.Sprintf("missing %s header [correlation_id=%s]", XForwardedHost, correlationID)))
-		return "", errors.New(XForwardedHost + " header is missing")
+		// Fallback to Host header
+		host = req.Host
+		if host == "" {
+			// Fallback to custom domain or environment variable
+			host = os.Getenv("ALB_DNS_NAME")
+			if host == "" {
+				host = "dev.grafana.reuped.com" // Default to your custom domain
+				d.Logger.Info(fmt.Sprintf("DEBUG: No X-Forwarded-Host or Host header, falling back to default host=%s [correlation_id=%s]", host, req.Header.Get("X-Correlation-ID")))
+			} else {
+				d.Logger.Info(fmt.Sprintf("DEBUG: No X-Forwarded-Host, using ALB_DNS_NAME=%s [correlation_id=%s]", host, req.Header.Get("X-Correlation-ID")))
+			}
+		} else {
+			d.Logger.Info(fmt.Sprintf("DEBUG: No X-Forwarded-Host, using Host header=%s [correlation_id=%s]", host, req.Header.Get("X-Correlation-ID")))
+		}
+	} else {
+		d.Logger.Info(fmt.Sprintf("DEBUG: Retrieved X-Forwarded-Host header=%s [correlation_id=%s]", host, req.Header.Get("X-Correlation-ID")))
 	}
 
-	// Log host header
-	d.Logger.Info(fmt.Sprintf("DEBUG: Retrieved host header [correlation_id=%s, host=%s]", correlationID, host))
+	if host == "" {
+		d.Logger.Failure(errors.New(fmt.Sprintf("failed to determine host [correlation_id=%s]", req.Header.Get("X-Correlation-ID"))))
+		return "", errors.New("missing host information")
+	}
+
+	// Clean host (remove port if present)
+	host = strings.Split(host, ":")[0]
 
 	rootUrl := fmt.Sprintf("%s://%s", protocol, host)
-
-	// Log successful root URL creation
-	d.Logger.Info(fmt.Sprintf("Generated root URL [correlation_id=%s, root_url=%s]", correlationID, rootUrl))
-
+	d.Logger.Info(fmt.Sprintf("DEBUG: Constructed root URL=%s [correlation_id=%s]", rootUrl, req.Header.Get("X-Correlation-ID")))
 	return rootUrl, nil
 }
