@@ -2,6 +2,8 @@ package director
 
 import (
 	"errors"
+	"os"
+	"strings"
 	"fmt"
 	"github.com/everton-taques-reup/saml-proxy/sharedKernel"
 	"github.com/google/uuid"
