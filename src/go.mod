@@ -1,10 +1,11 @@
-module github.com/MatteoGioioso/saml-proxy
+module github.com/everton-taques-reup/saml-proxy
 
 go 1.20
 
 require (
 	github.com/crewjam/saml v0.4.14
 	github.com/gin-gonic/gin v1.9.1
+	github.com/google/uuid v1.6.0
 )
 
 require (

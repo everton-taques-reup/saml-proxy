@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/MatteoGioioso/saml-proxy/sharedKernel"
+	"github.com/everton-taques-reup/saml-proxy/sharedKernel"
 	"github.com/gin-gonic/gin"
 )
 

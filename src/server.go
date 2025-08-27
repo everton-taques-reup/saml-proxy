@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/MatteoGioioso/saml-proxy/controllers"
-	"github.com/MatteoGioioso/saml-proxy/director"
-	"github.com/MatteoGioioso/saml-proxy/domain"
-	"github.com/MatteoGioioso/saml-proxy/sharedKernel"
+	"github.com/everton-taques-reup/saml-proxy/controllers"
+	"github.com/everton-taques-reup/saml-proxy/director"
+	"github.com/everton-taques-reup/saml-proxy/domain"
+	"github.com/everton-taques-reup/saml-proxy/sharedKernel"
 	"github.com/gin-gonic/gin"
 	"log"
 	"os"

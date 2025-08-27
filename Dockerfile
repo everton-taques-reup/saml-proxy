@@ -23,7 +23,11 @@ ENV UID=$UID
 ENV GID=$GID
 
 RUN DEBIAN_FRONTEND=noninteractive \
-    && apt-get update && apt-get upgrade -y
+    && apt-get update && apt-get upgrade -y \
+    && apt-get install -y ca-certificates
+
+COPY aws_ca.pem /usr/local/share/ca-certificates/aws_ca.crt
+RUN update-ca-certificates
 
 RUN addgroup $GROUP
 RUN adduser \

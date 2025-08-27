@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/MatteoGioioso/saml-proxy/sharedKernel"
+	"github.com/everton-taques-reup/saml-proxy/sharedKernel"
 	"github.com/crewjam/saml/samlsp"
 	"log"
 	"net/http"
