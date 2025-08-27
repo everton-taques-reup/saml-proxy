@@ -72,19 +72,8 @@ func (d Director) GetRootUrl(req *http.Request) (string, error) {
 	host := req.Header.Get("X-Forwarded-Host")
 	if host == "" {
 		// Fallback to Host header
-		host = req.Host
-		if host == "" {
-			// Fallback to custom domain or environment variable
-			host = os.Getenv("ALB_DNS_NAME")
-			if host == "" {
-				host = "dev.grafana.reuped.com" // Default to your custom domain
-				d.Logger.Info(fmt.Sprintf("DEBUG: No X-Forwarded-Host or Host header, falling back to default host=%s [correlation_id=%s]", host, req.Header.Get("X-Correlation-ID")))
-			} else {
-				d.Logger.Info(fmt.Sprintf("DEBUG: No X-Forwarded-Host, using ALB_DNS_NAME=%s [correlation_id=%s]", host, req.Header.Get("X-Correlation-ID")))
-			}
-		} else {
-			d.Logger.Info(fmt.Sprintf("DEBUG: No X-Forwarded-Host, using Host header=%s [correlation_id=%s]", host, req.Header.Get("X-Correlation-ID")))
-		}
+		host = os.Getenv("ALB_DNS_NAME")
+		d.Logger.Info(fmt.Sprintf("DEBUG: No X-Forwarded-Host, using ALB_DNS_NAME=%s [correlation_id=%s]", host, req.Header.Get("X-Correlation-ID")))
 	} else {
 		d.Logger.Info(fmt.Sprintf("DEBUG: Retrieved X-Forwarded-Host header=%s [correlation_id=%s]", host, req.Header.Get("X-Correlation-ID")))
 	}
